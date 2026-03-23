@@ -5,7 +5,7 @@ macro_rules! vecmac {
   ($($elem:expr),*) => {{
     // let count = todo!();
     #[allow(unused_mut)]
-    let mut vs = Vec::with_capacity($crate::vecmac![@COUNT; $($elem),*]);
+    let mut vs = Vec::with_capacity($crate::count![$($elem),*]);
     $(
       vs.push($elem);
     )*
@@ -25,11 +25,16 @@ macro_rules! vecmac {
     vs
   }};
 
-  (@COUNT; $($elem: expr),*) => {
-    <[()]>::len(&[$($crate::vecmac![@SUBST; $elem]),*])
-  };
 
-  (@SUBST; $elem: expr) => { () }
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! count {
+  ($($elem: expr),*) => {
+    <[()]>::len(&[$($crate::count![@subst; $elem]),*])
+  };
+  (@subst; $elem: expr) => { () };
 }
 
 trait MaxValue {
