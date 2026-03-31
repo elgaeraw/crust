@@ -1,62 +1,88 @@
 use std::collections::VecDeque;
 use std::sync::{Arc, Condvar, Mutex};
 pub struct Sender<T> {
-  inner: Arc<Inner<T>>,
+  shared: Arc<Shared<T>>,
 }
 
 impl<T> Clone for Sender<T> {
   fn clone(&self) -> Self {
+    let mut inner = self.shared.inner.lock().unwrap();
+    inner.senders += 1;
+
     Sender {
-      inner: Arc::clone(&self.inner),
+      shared: Arc::clone(&self.shared),
     }
   }
 }
 
 impl<T> Sender<T> {
   pub fn send(&mut self, t: T) {
-    let mut queue = self.inner.queue.lock().unwrap();
+    let mut inner = self.shared.inner.lock().unwrap();
 
-    queue.push_back(t);
+    inner.queue.push_back(t);
 
-    drop(queue);
+    drop(inner);
 
-    self.inner.available.notify_one();
+    self.shared.available.notify_one();
+  }
+}
+
+impl<T> Drop for Sender<T> {
+  fn drop(&mut self) {
+    let mut inner = self.shared.inner.lock().unwrap();
+
+    inner.senders -= 1;
+    let was_last = inner.senders == 0;
+    drop(inner);
+    if was_last {
+      self.shared.available.notify_one();
+    }
   }
 }
 
 pub struct Receiver<T> {
-  inner: Arc<Inner<T>>,
+  shared: Arc<Shared<T>>,
 }
 
 impl<T> Receiver<T> {
-  pub fn receive(&mut self) -> T {
-    let mut queue = self.inner.queue.lock().unwrap();
+  pub fn receive(&mut self) -> Option<T> {
+    let mut inner = self.shared.inner.lock().unwrap();
+
     loop {
-      match queue.pop_front() {
-        Some(t) => return t,
-        None => queue = self.inner.available.wait(queue).unwrap(),
+      match inner.queue.pop_front() {
+        Some(t) => return Some(t),
+        None if inner.senders == 0 => return None,
+        None => inner = self.shared.available.wait(inner).unwrap(),
       }
     }
   }
 }
 
 struct Inner<T> {
-  queue: Mutex<VecDeque<T>>,
+  queue: VecDeque<T>,
+  senders: usize,
+}
+
+struct Shared<T> {
+  inner: Mutex<Inner<T>>,
   available: Condvar,
 }
 
 pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
-  let inner = Inner {
-    queue: Mutex::default(),
+  let shared = Shared {
+    inner: Mutex::new(Inner {
+      queue: VecDeque::new(),
+      senders: 1,
+    }),
     available: Condvar::default(),
   };
-  let inner = Arc::new(inner);
+  let shared = Arc::new(shared);
   (
     Sender {
-      inner: Arc::clone(&inner),
+      shared: Arc::clone(&shared),
     },
     Receiver {
-      inner: Arc::clone(&inner),
+      shared: Arc::clone(&shared),
     },
   )
 }
@@ -70,6 +96,17 @@ mod tests {
     let (mut tx, mut rx) = channel();
 
     tx.send(42);
-    assert_eq!(rx.receive(), 42);
+    assert_eq!(rx.receive(), Some(42));
+  }
+
+  #[test]
+  fn closed() {
+    let (mut tx, mut rx) = channel();
+
+    tx.send(42);
+    assert_eq!(rx.receive(), Some(42));
+    drop(tx);
+
+    assert_eq!(rx.receive(), None);
   }
 }
