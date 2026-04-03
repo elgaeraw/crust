@@ -1,10 +1,10 @@
 use crate::Sorter;
 
 #[allow(dead_code)]
-pub struct BubbleSort;
+pub struct Bubble;
 
-impl Sorter for BubbleSort {
-  fn sort<T>(slice: &mut [T])
+impl Sorter for Bubble {
+  fn sort<T>(&self, slice: &mut [T])
   where
     T: Ord,
   {
@@ -24,13 +24,13 @@ impl Sorter for BubbleSort {
 
 #[cfg(test)]
 mod tests {
-  use crate::bubblesort::BubbleSort;
-  use crate::sort;
+  use crate::Sorter;
+  use crate::bubble::Bubble;
 
   #[test]
   fn bbl_works() {
     let mut things = vec![4, 2, 3, 5, 1];
-    sort::<_, BubbleSort>(&mut things);
+    Bubble.sort(&mut things);
     assert_eq!(things, &[1, 2, 3, 4, 5]);
   }
 }
