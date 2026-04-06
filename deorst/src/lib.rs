@@ -1,5 +1,7 @@
 mod bubble;
 mod insertion;
+mod selection;
+
 pub trait Sorter {
   fn sort<T>(&self, slice: &mut [T])
   where
