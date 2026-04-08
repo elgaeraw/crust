@@ -1,5 +1,6 @@
 mod bubble;
 mod insertion;
+mod quick;
 mod selection;
 
 pub trait Sorter {
