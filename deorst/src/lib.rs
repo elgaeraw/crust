@@ -3,6 +3,11 @@ mod insertion;
 mod quick;
 mod selection;
 
+pub use bubble::Bubble;
+pub use insertion::Insertion;
+pub use quick::Quick;
+pub use selection::Selection;
+
 pub trait Sorter {
   fn sort<T>(&self, slice: &mut [T])
   where

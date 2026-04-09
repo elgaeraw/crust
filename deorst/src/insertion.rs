@@ -2,7 +2,7 @@ use crate::Sorter;
 
 #[allow(dead_code)]
 pub struct Insertion {
-  smart: bool,
+  pub smart: bool,
 }
 
 impl Sorter for Insertion {
