@@ -43,9 +43,10 @@ where
 }
 
 fn main() {
+  println!("Algorithm n Comparisons");
   let mut rng = rand::rng();
   let counter = Rc::new(Cell::new(0));
-  for n in [0, 1, 10, 100, 1000, 10000] {
+  for n in [0, 1, 10, 100, 1000, 10000, 100000] {
     for _ in 0..10 {
       let values: Vec<SortEvaluator<usize>> = (0..n)
         .map(|_| SortEvaluator {
@@ -55,19 +56,19 @@ fn main() {
         .collect();
 
       let took_bbl = bench(Bubble, &values, Rc::clone(&counter));
-      println!("Bubble : {} {}", n, took_bbl);
+      println!("Bubble {} {}", n, took_bbl);
 
       let took_ins_smt = bench(Insertion { smart: true }, &values, Rc::clone(&counter));
-      println!("Insertion Smart : {} {}", n, took_ins_smt);
+      println!("InsertionSmart {} {}", n, took_ins_smt);
 
-      let took_ins_dmb = bench(Insertion { smart: true }, &values, Rc::clone(&counter));
-      println!("Insertion Dumb : {} {}", n, took_ins_dmb);
+      let took_ins_dmb = bench(Insertion { smart: false }, &values, Rc::clone(&counter));
+      println!("InsertionDumb {} {}", n, took_ins_dmb);
 
       let took_sel = bench(Selection, &values, Rc::clone(&counter));
-      println!("Selection : {} {}", n, took_sel);
+      println!("Selection {} {}", n, took_sel);
 
       let took_qck = bench(Quick, &values, Rc::clone(&counter));
-      println!("Quick : {} {}", n, took_qck);
+      println!("Quick {} {}", n, took_qck);
     }
   }
 }
