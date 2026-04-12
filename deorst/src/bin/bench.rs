@@ -46,7 +46,7 @@ fn main() {
   println!("Algorithm n Comparisons");
   let mut rng = rand::rng();
   let counter = Rc::new(Cell::new(0));
-  for n in [0, 1, 10, 100, 1000, 10000, 100000] {
+  for n in [10, 100, 1000, 10000, 100000] {
     for _ in 0..10 {
       let values: Vec<SortEvaluator<usize>> = (0..n)
         .map(|_| SortEvaluator {
