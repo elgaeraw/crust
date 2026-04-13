@@ -1,7 +1,6 @@
-#![feature(dropck_eyepatch)]
+// #![feature(dropck_eyepatch)]
 #![allow(unused_variables, unused_assignments)]
 
-use std::iter::Empty;
 use std::ptr::NonNull;
 use std::{fmt::Debug, marker::PhantomData};
 
@@ -19,7 +18,8 @@ impl<T> Boks<T> {
   }
 }
 
-unsafe impl<#[may_dangle] T> Drop for Boks<T> {
+// unsafe impl<#[may_dangle] T> Drop for Boks<T> {
+impl<T> Drop for Boks<T> {
   fn drop(&mut self) {
     drop(unsafe { Box::from_raw(self.p.as_mut()) });
   }
@@ -59,7 +59,7 @@ fn main() {
   println!("*b = {:#?}", *b);
 
   // drop(b);
-  println!("y = {:#?}", y);
+  // println!("y = {:#?}", y);
 
   let /* mut */ z = 42;
   // let b = Boks::ny(Oisann(&mut z));
@@ -78,7 +78,7 @@ fn main() {
   boks1 = boks2;
 
   let mut a = 42;
-  let mut it = Empty::default();
+  let mut it = std::iter::empty();
   let mut o = Some(Oisann(&mut a));
   {
     o = it.next();
