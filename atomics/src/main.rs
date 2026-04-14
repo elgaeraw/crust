@@ -26,14 +26,14 @@ impl<T> Mutex<T> {
   pub fn with_lock<R>(&self, f: impl FnOnce(&mut T) -> R) -> R {
     while self
       .locked
-      .compare_exchange_weak(UNLOCKED, LOCKED, Ordering::Relaxed, Ordering::Relaxed)
+      .compare_exchange_weak(UNLOCKED, LOCKED, Ordering::Acquire, Ordering::Relaxed)
       .is_err()
     {
       // MESI Protocol
       while self.locked.load(Ordering::Relaxed) == LOCKED {}
     }
     let ret = f(unsafe { &mut *self.v.get() });
-    self.locked.store(UNLOCKED, Ordering::Relaxed);
+    self.locked.store(UNLOCKED, Ordering::Release);
     ret
   }
 }
