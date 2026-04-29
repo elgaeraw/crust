@@ -7,11 +7,9 @@ pub struct Quick;
 pub fn quick<T: Ord>(slice: &mut [T]) {
   match slice.len() {
     0 | 1 => return,
-    2 => {
-      if slice[0] > slice[1] {
-        slice.swap(0, 1);
-        return;
-      }
+    2 if slice[0] > slice[1] => {
+      slice.swap(0, 1);
+      return;
     }
     _ => {}
   }
